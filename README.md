@@ -2,6 +2,8 @@
 
 A decentralized, verifiable loot box system built on the **Sui Blockchain**, featuring a retro pixel-art aesthetic, NFT integration, and a fairness-guaranteed pity system.
 
+🔴 **Live Demo:** [https://loot-box-system-kohl.vercel.app/](https://loot-box-system-kohl.vercel.app/)
+
 ![Hero Section](github-files/dungeon-of-relics.gif)
 
 ## 🌟 Key Features
