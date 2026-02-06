@@ -83,24 +83,62 @@ sui move test
 
 ## 📦 Getting Started
 
-1. **Clone the repo**
+### Prerequisites
+
+- **Node.js** v18+
+- **Sui CLI** installed and configured for Testnet
+- **Sui Wallet** browser extension
+
+### 1. Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/mari0-0/loot-box-system.git
+cd loot-box-system
+
+# Install UI dependencies
+cd ui
+npm install
+```
+
+### 2. Smart Contract Deployment
+
+1. **Publish the Package**
 
    ```bash
-   git clone https://github.com/yourusername/loot-box-system.git
-   ```
-
-2. **Run the UI**
-
-   ```bash
-   cd ui
-   npm install
-   npm run dev
-   ```
-
-3. **Deploy the Contract**
-   ```bash
+   cd ..
    sui client publish --gas-budget 100000000
    ```
+
+   _Copy the **Package ID** from the output._
+
+2. **Initialize the Game**
+   Call the `init_game` function to create the game configuration and treasury.
+   ```bash
+   sui client call --package <PACKAGE_ID> --module loot_box --function init_game --type-args 0x2::sui::SUI --gas-budget 10000000
+   ```
+   _Copy the **GameConfig ID** (Shared Object) from the "Created Objects" list._
+
+### 3. Configuration
+
+Open `ui/src/config.js` and update the constants with your deployed IDs:
+
+```javascript
+export const CONTRACT_CONFIG = {
+  PACKAGE_ID: "0x...", // Your Package ID
+  GAME_CONFIG_ID: "0x...", // Your GameConfig ID (Shared Object)
+  // ...
+};
+```
+
+### 4. Run the Application
+
+```bash
+cd ui
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser. Connect your Sui Wallet (switched to **Testnet**) and start collecting relics!
 
 ## 👥 Team
 
