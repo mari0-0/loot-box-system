@@ -11,7 +11,7 @@ export default function Header({ account, balance, isVisible }) {
       <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center gap-4">
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <img src="/src/assets/logo.png" alt="Logo" className="w-20 h-20 md:w-24 md:h-24" />
+          <img src="/assets/logo.png" alt="Logo" className="w-20 h-20 md:w-24 md:h-24" />
         </div>
 
         {/* Desktop Menu */}

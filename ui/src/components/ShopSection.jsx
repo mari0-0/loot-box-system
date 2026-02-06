@@ -2,7 +2,7 @@ import { CONTRACT_CONFIG, TREASURE_BOX } from "../config";
 
 export default function ShopSection({ isPurchasing, isTxPending, account, onPurchase }) {
   return (
-    <section className="text-center mb-16 py-12 px-8 bg-[url('/src/assets/dungeon_bg1.webp')] bg-center bg-cover border-4 border-text-muted shadow-[inset_0_0_50px_rgba(0,0,0,0.7),8px_8px_0_rgba(0,0,0,0.4)] relative">
+    <section className="text-center mb-16 py-12 px-8 bg-[url('/assets/dungeon_bg1.webp')] bg-center bg-cover border-4 border-text-muted shadow-[inset_0_0_50px_rgba(0,0,0,0.7),8px_8px_0_rgba(0,0,0,0.4)] relative">
       {/* Overlay */}
       <div className="absolute inset-0 bg-[rgba(26,15,10,0.7)] pointer-events-none" />
 
@@ -29,7 +29,7 @@ export default function ShopSection({ isPurchasing, isTxPending, account, onPurc
         {/* Purchase Section */}
         <div className="flex flex-col items-center gap-6">
           <div className="flex items-center gap-3 px-6 py-3 bg-bg-card border-4 border-accent-success text-[0.8rem] font-normal shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.3),4px_4px_0_rgba(0,0,0,0.4)]">
-            <img src="/src/assets/sui-logo.png" alt="SUI" className="w-6 h-6 object-contain" />
+            <img src="/assets/sui-logo.png" alt="SUI" className="w-6 h-6 object-contain" />
             <span>{(CONTRACT_CONFIG.LOOT_BOX_PRICE / 1e9).toFixed(9)} SUI</span>
           </div>
 

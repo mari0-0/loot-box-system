@@ -35,25 +35,25 @@ export const RARITY = {
   0: {
     name: "Common",
     class: "common",
-    icon: "/src/assets/rewards/common_sword.png",
+    icon: "/assets/rewards/common_sword.png",
     color: "#7aa5d2",
   },
   1: {
     name: "Rare",
     class: "rare",
-    icon: "/src/assets/rewards/rare_blade.png",
+    icon: "/assets/rewards/rare_blade.png",
     color: "#6abe30",
   },
   2: {
     name: "Epic",
     class: "epic",
-    icon: "/src/assets/rewards/epic_weapon.png",
+    icon: "/assets/rewards/epic_weapon.png",
     color: "#ac3232",
   },
   3: {
     name: "Legendary",
     class: "legendary",
-    icon: "/src/assets/rewards/legendary_artifact.png",
+    icon: "/assets/rewards/legendary_artifact.png",
     color: "#d77bba",
   },
 };
@@ -62,17 +62,17 @@ export const RARITY = {
 //metal
 export const TREASURE_BOX = {
   FRAMES: [
-    "/src/assets/treasure_box/metal/00.png",
-    "/src/assets/treasure_box/metal/01.png",
-    "/src/assets/treasure_box/metal/02.png",
-    "/src/assets/treasure_box/metal/03.png",
-    "/src/assets/treasure_box/metal/04.png",
-    "/src/assets/treasure_box/metal/05.png",
-    "/src/assets/treasure_box/metal/06.png",
-    "/src/assets/treasure_box/metal/07.png",
-    "/src/assets/treasure_box/metal/08.png",
-    "/src/assets/treasure_box/metal/09.png",
-    "/src/assets/treasure_box/metal/10.png",
+    "/assets/treasure_box/metal/00.png",
+    "/assets/treasure_box/metal/01.png",
+    "/assets/treasure_box/metal/02.png",
+    "/assets/treasure_box/metal/03.png",
+    "/assets/treasure_box/metal/04.png",
+    "/assets/treasure_box/metal/05.png",
+    "/assets/treasure_box/metal/06.png",
+    "/assets/treasure_box/metal/07.png",
+    "/assets/treasure_box/metal/08.png",
+    "/assets/treasure_box/metal/09.png",
+    "/assets/treasure_box/metal/10.png",
   ],
   FRAME_DURATION: 100, // ms per frame
 };
@@ -80,11 +80,11 @@ export const TREASURE_BOX = {
 //wooden
 // export const TREASURE_BOX = {
 //   FRAMES: [
-//     "/src/assets/treasure_box/wooden/00.png",
-//     "/src/assets/treasure_box/wooden/01.png",
-//     "/src/assets/treasure_box/wooden/02.png",
-//     "/src/assets/treasure_box/wooden/03.png",
-//     "/src/assets/treasure_box/wooden/04.png",
+//     "/assets/treasure_box/wooden/00.png",
+//     "/assets/treasure_box/wooden/01.png",
+//     "/assets/treasure_box/wooden/02.png",
+//     "/assets/treasure_box/wooden/03.png",
+//     "/assets/treasure_box/wooden/04.png",
 //   ],
 //   FRAME_DURATION: 100, // ms per frame
 // };

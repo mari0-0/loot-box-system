@@ -37,13 +37,13 @@ export default function HeroSection({ onVideoEnd }) {
         onEnded={handleVideoEnd}
         className="absolute inset-0 w-full h-full object-cover"
       >
-        <source src="/src/assets/hero-video.mp4" type="video/mp4" />
+        <source src="/assets/hero-video.mp4" type="video/mp4" />
       </video>
 
       {/* Logo - revealed 0.5s before video ends, scales from center with opacity */}
       {showLogo && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <img src="/src/assets/logo.png" alt="Logo" className="max-w-[80%] max-h-[60vh] animate-scale-in" />
+          <img src="/assets/logo.png" alt="Logo" className="max-w-[80%] max-h-[60vh] animate-scale-in" />
         </div>
       )}
 
