@@ -144,6 +144,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser. Connect you
 
 - **Abhai Matta**
 - **Rishwik Jujjavarapu**
+- **Avinash Raj**
 
 ---
 
