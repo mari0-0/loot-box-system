@@ -2,6 +2,8 @@ import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from "@
 import { Transaction } from "@mysten/sui/transactions";
 import { useCallback, useEffect, useState } from "react";
 import { Header, HeroSection, InventorySection, OpeningModal, ShopSection, Toast } from "./components";
+import BatScrollbar from "./components/BatScrollbar";
+
 import { ANIMATION, CONTRACT_CONFIG, RARITY, TREASURE_BOX } from "./config";
 
 // Generate random particles for effects
@@ -374,6 +376,7 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <BatScrollbar />
       <Header account={account} balance={balance} isVisible={showHeader} />
 
       <HeroSection onVideoEnd={() => setShowHeader(true)} />
