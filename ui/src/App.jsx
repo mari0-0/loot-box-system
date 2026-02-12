@@ -1,8 +1,9 @@
 import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit";
 import { Transaction } from "@mysten/sui/transactions";
 import { useCallback, useEffect, useState } from "react";
-import { Header, HeroSection, InventorySection, OpeningModal, ShopSection, Toast } from "./components";
+import { Header, HeroSection, InventorySection, MobileBlocker, OpeningModal, ShopSection, Toast } from "./components";
 import BatScrollbar from "./components/BatScrollbar";
+import { isMobile } from "./utils/mobile";
 
 import { ANIMATION, CONTRACT_CONFIG, RARITY, TREASURE_BOX } from "./config";
 
@@ -23,6 +24,38 @@ function App() {
   const account = useCurrentAccount();
   const client = useSuiClient();
   const { mutate: signAndExecute, isPending: isTxPending } = useSignAndExecuteTransaction();
+
+  // Mobile check
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+
+  useEffect(() => {
+    console.log("App mounted");
+    const checkMobile = () => {
+      // Force check for debugging
+      const isMobileUA = isMobile();
+      const width = window.innerWidth;
+      const isMobileWidth = width <= 768;
+
+      console.log("Mobile Check Debug:", {
+        isMobileUA,
+        width,
+        isMobileWidth,
+        userAgent: navigator.userAgent
+      });
+
+      if (isMobileUA || isMobileWidth) {
+        console.log("SETTING IS MOBILE TRUE");
+        setIsMobileDevice(true);
+      } else {
+        console.log("SETTING IS MOBILE FALSE");
+        setIsMobileDevice(false);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // State
   const [balance, setBalance] = useState(null);
@@ -284,6 +317,7 @@ function App() {
                           name: fields.name,
                           rarity: Number(fields.rarity),
                           power: Number(fields.power),
+                          timestamp: obj.data.version || Date.now() // fallback if needed
                         };
                         console.log("Found new item in inventory:", newItem);
                         break;
@@ -374,6 +408,12 @@ function App() {
     }
   }, [openingState]);
 
+  // Mobile check: Show blocker if mobile device detected
+  if (isMobileDevice) {
+    return <MobileBlocker />;
+  }
+
+  // Main Desktop Render
   return (
     <div className="min-h-screen flex flex-col">
       <BatScrollbar />
