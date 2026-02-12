@@ -1,3 +1,4 @@
+export { default as DownloadAppModal } from "./DownloadAppModal";
 export { default as Header } from "./Header";
 export { default as HeroSection } from "./HeroSection";
 export { default as InventorySection } from "./InventorySection";
