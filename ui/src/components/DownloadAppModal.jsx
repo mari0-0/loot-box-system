@@ -1,4 +1,5 @@
-import React from "react";
+import { ConnectButton } from "@mysten/dapp-kit";
+import React, { useState } from "react";
 import { CONTRACT_CONFIG } from "../config";
 import { getMobileOS } from "../utils/mobile";
 
@@ -58,13 +59,12 @@ const DownloadAppModal = ({ onClose }) => {
                     ) : null}
                 </div>
 
+
                 <div className="mt-6 text-center">
-                    <button
-                        onClick={onClose}
-                        className="text-text-muted hover:text-text-primary text-xs underline decoration-2 underline-offset-4"
-                    >
-                        I already have it installed
-                    </button>
+                    <div className="text-text-muted text-xs mb-2">I already have it installed:</div>
+                    <div className="flex justify-center pixel-button-wrapper">
+                        <ConnectButton />
+                    </div>
                 </div>
             </div>
         </div>

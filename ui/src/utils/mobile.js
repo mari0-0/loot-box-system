@@ -19,5 +19,6 @@ export const getMobileOS = () => {
 };
 
 export const isMobile = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(userAgent);
 };
