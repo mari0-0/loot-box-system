@@ -28,6 +28,12 @@ export const CONTRACT_CONFIG = {
 
   // Sui Explorer base URL (testnet)
   EXPLORER_URL: "https://suiscan.xyz/testnet/object",
+
+  // Mobile App Links
+  MOBILE_APP_LINKS: {
+    IOS: "https://apps.apple.com/app/slush-wallet/id123456789", // Replace with actual ID
+    ANDROID: "https://play.google.com/store/apps/details?id=com.slushwallet", // Replace with actual ID
+  },
 };
 
 // Rarity constants matching the Move contract
