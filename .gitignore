@@ -4,3 +4,12 @@ traces/*
 .coverage*
 
 .vscode
+
+# AI / IDE assistant related
+.cursor/
+.cursorignore
+.codex/
+.copilot/
+*.ai
+.aichat/
+.aicode/
