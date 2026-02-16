@@ -1,0 +1,402 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+@import "tailwindcss";
+
+/* ===== Custom Theme ===== */
+@theme {
+  /* Font family */
+  --font-pixel: "Press Start 2P", cursive;
+
+  /* Dungeon/Pixel Art theme colors */
+  --color-bg-primary: #1a0f0a;
+  --color-bg-secondary: #2d1810;
+  --color-bg-card: #3d2418;
+  --color-bg-hover: #4d3020;
+
+  /* Text colors */
+  --color-text-primary: #f4e4c1;
+  --color-text-secondary: #c9b697;
+  --color-text-muted: #8b7355;
+
+  /* Rarity colors */
+  --color-rarity-common: #7aa5d2;
+  --color-rarity-common-glow: rgba(122, 165, 210, 0.6);
+  --color-rarity-rare: #6abe30;
+  --color-rarity-rare-glow: rgba(106, 190, 48, 0.6);
+  --color-rarity-epic: #ac3232;
+  --color-rarity-epic-glow: rgba(172, 50, 50, 0.6);
+  --color-rarity-legendary: #d77bba;
+  --color-rarity-legendary-glow: rgba(215, 123, 186, 0.7);
+
+  /* Accent colors */
+  --color-accent-primary: #d95763;
+  --color-accent-secondary: #ac3232;
+  --color-accent-success: #6abe30;
+  --color-accent-danger: #ac3232;
+
+  /* Custom animations */
+  --animate-float: float 2s steps(4) infinite;
+  --animate-shake: shake 0.2s steps(2);
+  --animate-shake-intense: shake-intense 0.1s steps(2) infinite;
+  --animate-burst: burst 0.6s steps(3) forwards;
+  --animate-reveal: reveal 0.6s steps(6) forwards;
+  --animate-pulse-glow: pulse-glow 2s steps(2) infinite;
+  --animate-spin-slow: spin-slow 1s steps(4) infinite;
+  --animate-fade-in-up: fade-in-up 0.4s steps(4) forwards;
+  --animate-particle-float: particle-float 1s ease-out forwards;
+  --animate-blink: blink 1s steps(2) infinite;
+  --animate-slide-down: slide-down 0.8s ease-out forwards;
+  --animate-scale-in: scale-in 1.5s ease-out forwards;
+  --animate-scroll-bounce: scroll-bounce 1.5s ease-in-out infinite;
+}
+
+/* ===== Base Styles ===== */
+* {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+body {
+  font-family: var(--font-pixel);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Dungeon grid overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15) 0px, transparent 1px, transparent 2px, rgba(0, 0, 0, 0.15) 3px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.15) 0px, transparent 1px, transparent 2px, rgba(0, 0, 0, 0.15) 3px);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.3;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: var(--color-accent-primary);
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Pixel art wallet button styling */
+.pixel-button-wrapper {
+  --dapp-kit-colors-body: var(--color-text-secondary);
+  --dapp-kit-typography-fontFamily: "Press Start 2P", cursive;
+  --dapp-kit-typography-fontStyle: normal;
+  --dapp-kit-typography-fontWeights-normal: 400;
+  --dapp-kit-typography-lineHeight: 1.4;
+  /* --dapp-kit-fontSizes-small: 0.65rem; */
+}
+
+.pixel-button-wrapper button {
+  background: var(--color-bg-card) !important;
+  border: 2px solid var(--color-text-muted) !important;
+  color: var(--color-text-secondary) !important;
+  font-family: "Press Start 2P", cursive !important;
+  font-size: 0.65rem !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0 !important;
+  box-shadow:
+    inset -2px -2px 0 rgba(0, 0, 0, 0.4),
+    2px 2px 0 rgba(0, 0, 0, 0.3) !important;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s !important;
+}
+
+.pixel-button-wrapper button:hover {
+  transform: translate(-1px, -1px) !important;
+  box-shadow:
+    inset -2px -2px 0 rgba(0, 0, 0, 0.4),
+    3px 3px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+.pixel-button-wrapper button svg {
+  display: none !important;
+}
+
+.pixel-button-wrapper [data-dapp-kit] *,
+.pixel-button-wrapper button * {
+  color: var(--color-text-secondary) !important;
+  font-family: "Press Start 2P", cursive !important;
+}
+
+/* ===== Scrollbar ===== */
+/* ===== Scrollbar ===== */
+/* Hide default scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ===== Keyframe Animations ===== */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  25% {
+    transform: translateY(-4px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+
+  75% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--glow-color, var(--color-accent-primary));
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px var(--glow-color, var(--color-accent-primary));
+  }
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes shake-intense {
+
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-8px) scale(1.05);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(8px) scale(1.05);
+  }
+}
+
+@keyframes burst {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  33% {
+    transform: scale(1.3);
+    opacity: 0.8;
+  }
+
+  66% {
+    transform: scale(1.6);
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes reveal {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes sparkle {
+
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes spin-slow {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(90deg);
+  }
+
+  50% {
+    transform: rotate(180deg);
+  }
+
+  75% {
+    transform: rotate(270deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 1;
+  }
+
+  25% {
+    opacity: 0.75;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  75% {
+    opacity: 0.25;
+  }
+
+  100% {
+    transform: translateY(-100px) translateX(var(--tx, 0)) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes blink {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes toast-slide-in {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scroll-bounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  50% {
+    transform: translateY(12px);
+    opacity: 0.5;
+  }
+}
