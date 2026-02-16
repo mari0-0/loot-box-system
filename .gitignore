@@ -20,3 +20,12 @@ traces/*
 # Config files
 **/config.js
 ui/src/config.js
+
+# Project files (excluding ui folder)
+Move.lock
+Move.toml
+Published.toml
+github-files/
+package-lock.json
+sources/
+tests/
