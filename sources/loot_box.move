@@ -4,7 +4,7 @@
 /// and receive randomly generated in-game items (NFTs) with varying rarity levels.
 /// 
 /// The randomness is verifiable and tamper-proof using Sui's native on-chain randomness.
-#[allow(unused_const, lint(coin_field, self_transfer, custom_state_change))]
+#[allow(unused_const, lint(coin_field), lint(self_transfer), lint(custom_state_change))]
 module loot_box::loot_box {
     // ===== Imports =====
     use sui::coin::{Self, Coin};
@@ -220,6 +220,46 @@ module loot_box::loot_box {
         r: &Random,
         ctx: &mut TxContext
     ) {
+        open_single_loot_box(config, loot_box, r, ctx);
+    }
+
+    /// Open multiple loot boxes in a single transaction
+    /// 
+    /// # Type Parameters
+    /// * `T` - The fungible token type used for payments
+    /// 
+    /// # Arguments
+    /// * `config` - Shared GameConfig to read rarity weights
+    /// * `loot_boxes` - Vector of loot boxes to open (will be destroyed)
+    /// * `r` - The Random object from address 0x8
+    /// * `ctx` - Transaction context
+    entry fun bulk_open_loot_boxes<T>(
+        config: &mut GameConfig<T>,
+        mut loot_boxes: vector<LootBox>,
+        r: &Random,
+        ctx: &mut TxContext
+    ) {
+        let len = vector::length(&loot_boxes);
+        let mut i = 0;
+        
+        while (i < len) {
+            let loot_box = vector::remove(&mut loot_boxes, 0);
+            open_single_loot_box(config, loot_box, r, ctx);
+            i = i + 1;
+        };
+        
+        // Clean up the empty vector
+        vector::destroy_empty(loot_boxes);
+    }
+
+    /// Internal helper function to open a single loot box
+    /// Used by both open_loot_box and bulk_open_loot_boxes
+    fun open_single_loot_box<T>(
+        config: &mut GameConfig<T>,
+        loot_box: LootBox,
+        r: &Random,
+        ctx: &mut TxContext
+    ) {
         let sender = ctx.sender();
 
         // Create a new RandomGenerator
@@ -243,12 +283,6 @@ module loot_box::loot_box {
         };
         
         // If random roll resulted in Legendary (but not from pity), reset counter
-        // This is handled inside check_and_update_pity for the pity case, 
-        // but we need to handle the natural Legendary case
-        // However, accessing dynamic fields twice might be expensive.
-        // Let's refine the logic:
-        // We already updated the counter in check_and_update_pity assuming a non-pity roll.
-        // If we rolled a natural Legendary, we should reset the counter.
         if (rarity == RARITY_LEGENDARY) {
              reset_pity_counter(config, sender);
         };

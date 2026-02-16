@@ -1,7 +1,7 @@
 // Contract configuration for the deployed loot box system
 export const CONTRACT_CONFIG = {
-  // Package ID from latest deployment with NFT image support
-  PACKAGE_ID: "0x06ec4cf04fd461d3f49c5c95cb92d85646c0a79de59f27b4ce0f6f5041e062d7",
+  // Package ID from latest deployment with bulk_open_loot_boxes function
+  PACKAGE_ID: "0x851540cb644526d668e03870d3703026e24a2d816b8ca845993e85c80371a459",
 
   // Module name
   MODULE: "loot_box",
@@ -10,21 +10,21 @@ export const CONTRACT_CONFIG = {
   RANDOM_OBJECT: "0x0000000000000000000000000000000000000000000000000000000000000008",
 
   // GameConfig shared object ID
-  GAME_CONFIG_ID: "0xd0405c7277b456baeb54203713e9e62d8b30d8831770571beb5e53a220d84295",
+  GAME_CONFIG_ID: "0xadba0b3ac8b2241516d7de2fa8eacc2d2601c17c56f1f1bf59119c57d4e721d3",
 
   // Loot box price in MIST (100 = 100 MIST = 0.0000001 SUI for easy testing)
   // Change to 100_000_000_000 for 100 SUI in production
   LOOT_BOX_PRICE: 100,
 
   // Type for GameItem
-  GAME_ITEM_TYPE: "0x06ec4cf04fd461d3f49c5c95cb92d85646c0a79de59f27b4ce0f6f5041e062d7::loot_box::GameItem",
+  GAME_ITEM_TYPE: "0x851540cb644526d668e03870d3703026e24a2d816b8ca845993e85c80371a459::loot_box::GameItem",
 
   // Type for LootBox
-  LOOT_BOX_TYPE: "0x06ec4cf04fd461d3f49c5c95cb92d85646c0a79de59f27b4ce0f6f5041e062d7::loot_box::LootBox",
+  LOOT_BOX_TYPE: "0x851540cb644526d668e03870d3703026e24a2d816b8ca845993e85c80371a459::loot_box::LootBox",
 
   // Type for GameConfig
   GAME_CONFIG_TYPE:
-    "0x06ec4cf04fd461d3f49c5c95cb92d85646c0a79de59f27b4ce0f6f5041e062d7::loot_box::GameConfig<0x2::sui::SUI>",
+    "0x851540cb644526d668e03870d3703026e24a2d816b8ca845993e85c80371a459::loot_box::GameConfig<0x2::sui::SUI>",
 
   // Sui Explorer base URL (testnet)
   EXPLORER_URL: "https://suiscan.xyz/testnet/object",

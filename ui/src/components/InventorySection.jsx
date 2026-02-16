@@ -10,6 +10,7 @@ export default function InventorySection({
   rarityFilter,
   onFilterChange,
   onOpenLootBox,
+  onBulkOpen,
   onItemClick,
   openingState,
 }) {
@@ -25,9 +26,20 @@ export default function InventorySection({
             <h2 className="text-[1.5rem] font-normal text-text-primary [text-shadow:3px_3px_0_var(--color-bg-primary),-1px_-1px_0_var(--color-accent-primary)] tracking-wider">
               Unopened Loot Boxes
             </h2>
-            <span className="text-text-secondary bg-bg-card px-4 py-2 border-4 border-text-muted text-[0.75rem] shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.3),2px_2px_0_rgba(0,0,0,0.4)]">
-              {lootBoxes.length} boxes
-            </span>
+            <div className="flex items-center gap-4">
+              <span className="text-text-secondary bg-bg-card px-4 py-2 border-4 border-text-muted text-[0.75rem] shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.3),2px_2px_0_rgba(0,0,0,0.4)]">
+                {lootBoxes.length} boxes
+              </span>
+              {lootBoxes.length > 0 && (
+                <button
+                  className="px-6 py-2 text-[0.7rem] font-normal bg-accent-success border-4 border-text-primary text-text-primary font-pixel uppercase shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.3),inset_4px_4px_0_rgba(255,255,255,0.2),4px_4px_0_rgba(0,0,0,0.5)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.3),inset_4px_4px_0_rgba(255,255,255,0.2),2px_2px_0_rgba(0,0,0,0.5)] active:translate-x-1 active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  onClick={() => onBulkOpen()}
+                  disabled={!!openingState}
+                >
+                  🎁 Open All
+                </button>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-8">
             {lootBoxes.map(box => (
