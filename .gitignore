@@ -13,3 +13,6 @@ traces/*
 *.ai
 .aichat/
 .aicode/
+
+# Markdown
+*.md
