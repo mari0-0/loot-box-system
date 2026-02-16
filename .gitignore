@@ -1,0 +1,22 @@
+build/*
+traces/*
+.trace
+.coverage*
+
+.vscode
+
+# AI / IDE assistant related
+.cursor/
+.cursorignore
+.codex/
+.copilot/
+*.ai
+.aichat/
+.aicode/
+
+# Markdown
+*.md
+
+# Config files
+**/config.js
+ui/src/config.js
