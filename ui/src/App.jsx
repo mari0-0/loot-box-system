@@ -29,25 +29,14 @@ function App() {
   const [isMobileDevice, setIsMobileDevice] = useState(false);
 
   useEffect(() => {
-    console.log("App mounted");
     const checkMobile = () => {
-      // Force check for debugging
       const isMobileUA = isMobile();
       const width = window.innerWidth;
       const isMobileWidth = width <= 768;
 
-      console.log("Mobile Check Debug:", {
-        isMobileUA,
-        width,
-        isMobileWidth,
-        userAgent: navigator.userAgent
-      });
-
       if (isMobileUA || isMobileWidth) {
-        console.log("SETTING IS MOBILE TRUE");
         setIsMobileDevice(true);
       } else {
-        console.log("SETTING IS MOBILE FALSE");
         setIsMobileDevice(false);
       }
     };
@@ -71,6 +60,7 @@ function App() {
   const [treasureBoxFrame, setTreasureBoxFrame] = useState(0);
   const [rarityFilter, setRarityFilter] = useState("all");
   const [showHeader, setShowHeader] = useState(false);
+  const [purchaseQuantity, setPurchaseQuantity] = useState(1);
 
   // Add toast notification
   const addToast = useCallback((message, type = "info", link = null) => {
@@ -92,35 +82,46 @@ function App() {
     }
   }, [account, client]);
 
-  // Fetch inventory (GameItems) from on-chain
+  // Fetch inventory with pagination
   const fetchInventory = useCallback(async () => {
     if (!account) return;
     setIsLoading(true);
     try {
-      const objects = await client.getOwnedObjects({
-        owner: account.address,
-        filter: { StructType: CONTRACT_CONFIG.GAME_ITEM_TYPE },
-        options: { showContent: true },
-      });
+      let allItems = [];
+      let hasNextPage = true;
+      let cursor = null;
 
-      const items = objects.data
-        .map(obj => {
-          if (obj.data?.content?.fields) {
-            const fields = obj.data.content.fields;
-            return {
-              id: obj.data.objectId,
-              name: fields.name,
-              rarity: parseInt(fields.rarity),
-              power: parseInt(fields.power),
-              timestamp: obj.data.version,
-            };
-          }
-          return null;
-        })
-        .filter(Boolean)
-        .sort((a, b) => b.timestamp - a.timestamp);
+      while (hasNextPage) {
+        const response = await client.getOwnedObjects({
+          owner: account.address,
+          filter: { StructType: CONTRACT_CONFIG.GAME_ITEM_TYPE },
+          options: { showContent: true },
+          cursor: cursor,
+        });
 
-      setInventory(items);
+        const items = response.data
+          .map(obj => {
+            if (obj.data?.content?.fields) {
+              const fields = obj.data.content.fields;
+              return {
+                id: obj.data.objectId,
+                name: fields.name,
+                rarity: parseInt(fields.rarity),
+                power: parseInt(fields.power),
+                timestamp: obj.data.version,
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
+
+        allItems = [...allItems, ...items];
+        hasNextPage = response.hasNextPage;
+        cursor = response.nextCursor;
+      }
+
+      allItems.sort((a, b) => b.timestamp - a.timestamp);
+      setInventory(allItems);
     } catch (err) {
       console.error("Failed to fetch inventory:", err);
     } finally {
@@ -128,30 +129,47 @@ function App() {
     }
   }, [account, client]);
 
-  // Fetch loot boxes from on-chain
+  // Fetch loot boxes with pagination
   const fetchLootBoxes = useCallback(async () => {
     if (!account) return;
     try {
-      const objects = await client.getOwnedObjects({
-        owner: account.address,
-        filter: { StructType: CONTRACT_CONFIG.LOOT_BOX_TYPE },
-        options: { showContent: true },
-      });
+      let allBoxes = [];
+      let hasNextPage = true;
+      let cursor = null;
 
-      const boxes = objects.data.map(obj => ({
-        id: obj.data.objectId,
-      }));
+      while (hasNextPage) {
+        const response = await client.getOwnedObjects({
+          owner: account.address,
+          filter: { StructType: CONTRACT_CONFIG.LOOT_BOX_TYPE },
+          options: { showContent: true },
+          cursor: cursor,
+        });
 
-      setLootBoxes(boxes);
+        const boxes = response.data.map(obj => ({
+          id: obj.data.objectId,
+          version: obj.data.version,
+        }));
+
+        allBoxes = [...allBoxes, ...boxes];
+        hasNextPage = response.hasNextPage;
+        cursor = response.nextCursor;
+      }
+
+      setLootBoxes(allBoxes);
     } catch (err) {
       console.error("Failed to fetch loot boxes:", err);
     }
   }, [account, client]);
 
   // Purchase loot box
-  const purchaseLootBox = useCallback(async () => {
+  const purchaseLootBox = useCallback(async (quantity = 1) => {
     if (!account) {
       addToast("Please connect your wallet first", "error");
+      return;
+    }
+
+    if (quantity < 1 || quantity > 10) {
+      addToast("Quantity must be between 1 and 10", "error");
       return;
     }
 
@@ -159,26 +177,26 @@ function App() {
 
     try {
       const tx = new Transaction();
-      const [paymentCoin] = tx.splitCoins(tx.gas, [tx.pure.u64(CONTRACT_CONFIG.LOOT_BOX_PRICE)]);
+      const boughtBoxes = [];
+      for (let i = 0; i < quantity; i++) {
+        const [paymentCoin] = tx.splitCoins(tx.gas, [tx.pure.u64(CONTRACT_CONFIG.LOOT_BOX_PRICE)]);
+        const [lootBox] = tx.moveCall({
+          target: `${CONTRACT_CONFIG.PACKAGE_ID}::loot_box::purchase_loot_box`,
+          typeArguments: ["0x2::sui::SUI"],
+          arguments: [tx.object(CONTRACT_CONFIG.GAME_CONFIG_ID), paymentCoin],
+        });
+        boughtBoxes.push(lootBox);
+      }
 
-      const [lootBox] = tx.moveCall({
-        target: `${CONTRACT_CONFIG.PACKAGE_ID}::loot_box::purchase_loot_box`,
-        typeArguments: ["0x2::sui::SUI"],
-        arguments: [tx.object(CONTRACT_CONFIG.GAME_CONFIG_ID), paymentCoin],
-      });
-
-      tx.transferObjects([lootBox], account.address);
+      tx.transferObjects(boughtBoxes, account.address);
 
       signAndExecute(
         { transaction: tx },
         {
           onSuccess: async result => {
-            console.log("Purchase success:", result);
-            const txLink = `${CONTRACT_CONFIG.EXPLORER_URL.replace("/object", "/tx")}/${result.digest}`;
-            addToast(`Loot box purchased!`, "success", txLink);
+            addToast(quantity === 1 ? "Loot box purchased!" : `${quantity} loot boxes purchased!`, "success");
             await fetchBalance();
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await fetchLootBoxes();
+            setTimeout(fetchLootBoxes, 1000);
           },
           onError: error => {
             console.error("Purchase failed:", error);
@@ -194,7 +212,7 @@ function App() {
     }
   }, [account, signAndExecute, addToast, fetchBalance, fetchLootBoxes]);
 
-  // Open loot box
+  // Open single loot box
   const openLootBox = useCallback(
     async lootBox => {
       if (!account) return;
@@ -204,7 +222,6 @@ function App() {
 
       try {
         const tx = new Transaction();
-
         tx.moveCall({
           target: `${CONTRACT_CONFIG.PACKAGE_ID}::loot_box::open_loot_box`,
           typeArguments: ["0x2::sui::SUI"],
@@ -215,16 +232,12 @@ function App() {
           ],
         });
 
-        setTimeout(() => {
-          setOpeningState("intense");
-        }, ANIMATION.SHAKE_DURATION);
+        setTimeout(() => setOpeningState("intense"), ANIMATION.SHAKE_DURATION);
 
         signAndExecute(
           { transaction: tx },
           {
             onSuccess: async result => {
-              console.log("Open success:", result);
-
               setOpeningState("revealing-animation");
               let currentFrame = 6;
               const playRemainingAnimation = () => {
@@ -244,127 +257,199 @@ function App() {
 
               let newItem = null;
               try {
-                const txData = await client.getTransactionBlock({
-                  digest: result.digest,
-                  options: {
-                    showEffects: true,
-                    showEvents: true,
-                    showObjectChanges: true,
-                  },
-                });
+                // Get transaction data with retry
+                let txData = null;
+                for (let r = 0; r < 5; r++) {
+                  try {
+                    txData = await client.getTransactionBlock({
+                      digest: result.digest,
+                      options: { showEffects: true, showEvents: true, showObjectChanges: true },
+                    });
+                    if (txData) break;
+                  } catch (e) {
+                    await new Promise(res => setTimeout(res, 500));
+                  }
+                }
 
-                console.log("Transaction details:", txData);
-
-                if (txData.events && txData.events.length > 0) {
+                if (txData && txData.events && txData.events.length > 0) {
                   const openEvent = txData.events.find(e => e.type.includes("LootBoxOpened"));
                   if (openEvent && openEvent.parsedJson) {
                     const data = openEvent.parsedJson;
                     const rarity = Number(data.rarity);
-                    const power = Number(data.power);
-                    const rarityInfo = RARITY[rarity];
-                    const itemNames = ["Common Sword", "Rare Blade", "Epic Weapon", "Legendary Artifact"];
                     newItem = {
                       id: data.item_id,
-                      name: itemNames[rarity],
+                      name: ["Common Sword", "Rare Blade", "Epic Weapon", "Legendary Artifact"][rarity],
                       rarity,
-                      power,
+                      power: Number(data.power),
                     };
-                    console.log("Parsed from event:", newItem);
                   }
                 }
 
-                if (!newItem && txData.objectChanges) {
-                  const createdItem = txData.objectChanges.find(
-                    change => change.type === "created" && change.objectType?.includes("GameItem"),
-                  );
-                  if (createdItem) {
-                    const itemObj = await client.getObject({
-                      id: createdItem.objectId,
-                      options: { showContent: true },
-                    });
-                    if (itemObj.data?.content?.fields) {
-                      const fields = itemObj.data.content.fields;
-                      newItem = {
-                        id: createdItem.objectId,
-                        name: fields.name,
-                        rarity: Number(fields.rarity),
-                        power: Number(fields.power),
-                      };
-                      console.log("Fetched from object:", newItem);
+                if (!newItem && txData?.objectChanges) {
+                  const created = txData.objectChanges.find(c => c.type === "created" && c.objectType?.includes("GameItem"));
+                  if (created) {
+                    const obj = await client.getObject({ id: created.objectId, options: { showContent: true } });
+                    if (obj.data?.content?.fields) {
+                      const f = obj.data.content.fields;
+                      newItem = { id: created.objectId, name: f.name, rarity: Number(f.rarity), power: Number(f.power) };
                     }
                   }
                 }
               } catch (err) {
-                console.error("Error fetching transaction details:", err);
-              }
-
-              if (!newItem) {
-                console.log("Falling back to inventory fetch");
-                const items = await client.getOwnedObjects({
-                  owner: account.address,
-                  filter: { StructType: CONTRACT_CONFIG.GAME_ITEM_TYPE },
-                  options: { showContent: true },
-                });
-                if (items.data.length > 0) {
-                  for (const obj of items.data) {
-                    if (obj.data?.content?.fields) {
-                      const objId = obj.data.objectId;
-                      const existsInInventory = inventory.some(item => item.id === objId);
-                      if (!existsInInventory) {
-                        const fields = obj.data.content.fields;
-                        newItem = {
-                          id: objId,
-                          name: fields.name,
-                          rarity: Number(fields.rarity),
-                          power: Number(fields.power),
-                          timestamp: obj.data.version || Date.now() // fallback if needed
-                        };
-                        console.log("Found new item in inventory:", newItem);
-                        break;
-                      }
-                    }
-                  }
-                }
+                console.error("Error fetching items:", err);
               }
 
               if (newItem) {
-                const rarityInfo = RARITY[newItem.rarity];
-                setParticles(generateParticles(ANIMATION.PARTICLE_COUNT, rarityInfo.color));
+                setParticles(generateParticles(ANIMATION.PARTICLE_COUNT, RARITY[newItem.rarity].color));
                 setRevealedItem(newItem);
                 setOpeningState("revealing");
-
-                await fetchLootBoxes();
-                await fetchInventory();
-                await fetchBalance();
               } else {
-                addToast("Item received! Check your inventory.", "success");
+                addToast("Item opened! Check your inventory.", "success");
                 setOpeningState(null);
-                setRevealedItem(null);
-                setParticles([]);
-                setCurrentOpeningBox(null);
-                await fetchLootBoxes();
-                await fetchInventory();
               }
+              fetchBalance();
+              fetchLootBoxes();
+              fetchInventory();
             },
             onError: error => {
-              console.error("Open failed:", error);
               addToast(`Failed to open: ${error.message}`, "error");
               setOpeningState(null);
-              setCurrentOpeningBox(null);
             },
           },
         );
       } catch (err) {
-        console.error("Open error:", err);
-        addToast("Failed to create transaction", "error");
+        addToast("Failed to start transaction", "error");
         setOpeningState(null);
-        setCurrentOpeningBox(null);
       }
     },
-    [account, client, signAndExecute, addToast, fetchBalance, fetchInventory, fetchLootBoxes, inventory],
+    [account, client, signAndExecute, addToast, fetchBalance, fetchInventory, fetchLootBoxes]
   );
 
-  // Close reveal modal
+  // Bulk open loot boxes
+  const openMultipleLootBoxes = useCallback(
+    async (count = 10) => {
+      if (!account) return;
+
+      const boxesToOpen = lootBoxes.slice(0, Math.min(count, lootBoxes.length));
+      if (boxesToOpen.length === 0) {
+        addToast("No loot boxes to open", "error");
+        return;
+      }
+
+      setOpeningState("shaking");
+
+      try {
+        setTimeout(() => setOpeningState("intense"), ANIMATION.SHAKE_DURATION);
+        await new Promise(resolve => setTimeout(resolve, ANIMATION.SHAKE_DURATION + ANIMATION.INTENSE_SHAKE_DURATION));
+
+        setOpeningState("revealing-animation");
+        let currentFrame = 6;
+        const playRemaining = () => {
+          return new Promise(resolve => {
+            const interval = setInterval(() => {
+              setTreasureBoxFrame(currentFrame);
+              currentFrame++;
+              if (currentFrame > TREASURE_BOX.FRAMES.length - 1) {
+                clearInterval(interval);
+                resolve();
+              }
+            }, TREASURE_BOX.FRAME_DURATION);
+          });
+        };
+
+        await playRemaining();
+
+        const newItems = [];
+        let successCount = 0;
+
+        for (let i = 0; i < boxesToOpen.length; i++) {
+          const box = boxesToOpen[i];
+          try {
+            const tx = new Transaction();
+            tx.moveCall({
+              target: `${CONTRACT_CONFIG.PACKAGE_ID}::loot_box::open_loot_box`,
+              typeArguments: ["0x2::sui::SUI"],
+              arguments: [
+                tx.object(CONTRACT_CONFIG.GAME_CONFIG_ID),
+                tx.object(box.id),
+                tx.object(CONTRACT_CONFIG.RANDOM_OBJECT),
+              ],
+            });
+
+            const result = await new Promise((resolve, reject) => {
+              signAndExecute({ transaction: tx }, { onSuccess: resolve, onError: reject });
+            });
+
+            // Fetch result with retry
+            let txData = null;
+            for (let r = 0; r < 5; r++) {
+              try {
+                txData = await client.getTransactionBlock({
+                  digest: result.digest,
+                  options: { showEffects: true, showEvents: true, showObjectChanges: true },
+                });
+                if (txData) break;
+              } catch (e) {
+                await new Promise(res => setTimeout(res, 500));
+              }
+            }
+
+            if (txData) {
+              let itemFound = false;
+              const event = txData.events?.find(e => e.type.includes("LootBoxOpened"));
+              if (event?.parsedJson) {
+                const data = event.parsedJson;
+                const r = Number(data.rarity);
+                newItems.push({
+                  id: data.item_id,
+                  name: ["Common Sword", "Rare Blade", "Epic Weapon", "Legendary Artifact"][r],
+                  rarity: r,
+                  power: Number(data.power),
+                });
+                successCount++;
+                itemFound = true;
+              }
+
+              if (!itemFound && txData.objectChanges) {
+                const created = txData.objectChanges.find(c => c.type === "created" && c.objectType?.includes("GameItem"));
+                if (created) {
+                  const obj = await client.getObject({ id: created.objectId, options: { showContent: true } });
+                  if (obj.data?.content?.fields) {
+                    const f = obj.data.content.fields;
+                    newItems.push({ id: created.objectId, name: f.name, rarity: Number(f.rarity), power: Number(f.power) });
+                    successCount++;
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            console.error(`Error with box ${i + 1}:`, err);
+          }
+          if (i < boxesToOpen.length - 1) await new Promise(r => setTimeout(r, 400));
+        }
+
+        if (newItems.length > 0) {
+          const maxRarity = Math.max(...newItems.map(it => it.rarity));
+          setParticles(generateParticles(ANIMATION.PARTICLE_COUNT * 2, RARITY[maxRarity].color));
+          setRevealedItem(newItems);
+          setOpeningState("revealing");
+          addToast(`Successfully opened ${successCount} boxes!`, "success");
+        } else {
+          addToast("Completed processing boxes.", "success");
+          setOpeningState(null);
+        }
+        fetchBalance();
+        fetchLootBoxes();
+        fetchInventory();
+      } catch (err) {
+        console.error("Bulk open error:", err);
+        addToast("Error during bulk opening", "error");
+        setOpeningState(null);
+      }
+    },
+    [account, client, signAndExecute, addToast, fetchBalance, fetchInventory, fetchLootBoxes, lootBoxes]
+  );
+
   const closeReveal = () => {
     setOpeningState(null);
     setRevealedItem(null);
@@ -372,12 +457,10 @@ function App() {
     setCurrentOpeningBox(null);
   };
 
-  // Open item in Sui Explorer
   const openInExplorer = itemId => {
     window.open(`${CONTRACT_CONFIG.EXPLORER_URL}/${itemId}`, "_blank");
   };
 
-  // Initial data fetch on account change
   useEffect(() => {
     if (account) {
       fetchBalance();
@@ -390,17 +473,11 @@ function App() {
     }
   }, [account, fetchBalance, fetchInventory, fetchLootBoxes]);
 
-  // Treasure box animation during opening
   useEffect(() => {
     if (openingState === "shaking" || openingState === "intense") {
       const maxFrame = 5;
       const interval = setInterval(() => {
-        setTreasureBoxFrame(prev => {
-          if (prev >= maxFrame) {
-            return maxFrame;
-          }
-          return prev + 1;
-        });
+        setTreasureBoxFrame(prev => (prev >= maxFrame ? maxFrame : prev + 1));
       }, TREASURE_BOX.FRAME_DURATION);
       return () => clearInterval(interval);
     } else if (openingState !== "revealing-animation") {
@@ -408,27 +485,22 @@ function App() {
     }
   }, [openingState]);
 
-  // Mobile check: Show blocker if mobile device detected
-  if (isMobileDevice) {
-    return <MobileBlocker />;
-  }
+  if (isMobileDevice) return <MobileBlocker />;
 
-  // Main Desktop Render
   return (
     <div className="min-h-screen flex flex-col">
       <BatScrollbar />
       <Header account={account} balance={balance} isVisible={showHeader} />
-
       <HeroSection onVideoEnd={() => setShowHeader(true)} />
-
-      <main className="flex-1s">
+      <main className="flex-1">
         <ShopSection
           isPurchasing={isPurchasing}
           isTxPending={isTxPending}
           account={account}
           onPurchase={purchaseLootBox}
+          quantity={purchaseQuantity}
+          setQuantity={setPurchaseQuantity}
         />
-
         <InventorySection
           lootBoxes={lootBoxes}
           inventory={inventory}
@@ -437,11 +509,11 @@ function App() {
           rarityFilter={rarityFilter}
           onFilterChange={setRarityFilter}
           onOpenLootBox={openLootBox}
+          onBulkOpen={openMultipleLootBoxes}
           onItemClick={openInExplorer}
           openingState={openingState}
         />
       </main>
-
       <OpeningModal
         openingState={openingState}
         treasureBoxFrame={treasureBoxFrame}
@@ -449,7 +521,6 @@ function App() {
         particles={particles}
         onClose={closeReveal}
       />
-
       <Toast toasts={toasts} />
     </div>
   );
